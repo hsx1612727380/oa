@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="com.hsx.oa.domain">
+
+	<!-- 映射Reply持久化类 -->
+	<class name="Reply" table="oa_reply">
+		<!-- 主键 -->
+		<id name="id" column="id">
+			<generator class="native"></generator>
+		</id>
+		<!-- 普通属性 -->
+		<property name="title" column="title"/>
+		<property name="content" column="content" type="text" length="65535"/>
+		<property name="postTime" column="postTime" type="timestamp"/>
+		<property name="ipAddr" column="ipAddr"/>
+		<!-- 关联关系 -->
+		<!-- author属性，本类与User类多对一的关系 -->
+		<many-to-one name="author" class="User" column="authorId"></many-to-one>
+		<!-- topics属性，本类与Topic类多对一的关系 -->
+		<many-to-one name="topic" class="Topic" column="topicId"></many-to-one>
+	</class>
+</hibernate-mapping>

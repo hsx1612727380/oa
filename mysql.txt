@@ -1,0 +1,14 @@
+插入乱码解决方案：
+set character_set_client=gbk;
+set character_set_connection=gbk;
+
+显示乱码解决方案：
+set character_set_results=gbk;
+
+
+创建数据库:
+create database oa default character set utf8;
+
+查看数据库的一些基本配置：比如编码
+status：
+

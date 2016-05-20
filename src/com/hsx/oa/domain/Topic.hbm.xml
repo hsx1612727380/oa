@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="com.hsx.oa.domain">
+
+	<!-- 映射Topic持久化类 -->
+	<class name="Topic" table="oa_topic">
+		<!-- 主键 -->
+		<id name="id" column="id">
+			<generator class="native"></generator>
+		</id>
+		<!-- 普通属性 -->
+		<property name="title" column="title"/>
+		<property name="content" column="content" type="text" length="65535"/>
+		<property name="postTime" column="postTime" type="timestamp"/>
+		<property name="ipAddr" column="ipAddr"/>
+		<property name="type" column="type"/>
+		<property name="replyCount" column="replyCount"/>
+		<property name="lastUpdateTime" column="lastUpdateTime" type="timestamp"/>
+		<!-- 关联关系 -->
+		<!-- author属性，本类与User类多对一的关系 -->
+		<many-to-one name="author" class="User" column="authorId"></many-to-one>
+		<!-- replies属性，本类与Reply类的一对多的关系 -->
+		<set name="replies">
+			<key column="topicId"></key>
+			<one-to-many class="Reply"/>
+		</set>
+		<!-- forum属性，本类与Forum类的多对一的关系 -->
+		<many-to-one name="forum" class="Forum" column="forumId"></many-to-one>
+		<!-- lastReply属性，本类与Reply类的一对一的关系 -->
+		<many-to-one name="lastReply" class="Reply" column="lastReplyId" unique="true"></many-to-one>
+	</class>
+</hibernate-mapping>

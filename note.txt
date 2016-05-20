@@ -1,0 +1,495 @@
+设计、编码、测试、部署
+
+一、分层
+  3层
+
+  View		servlet/action
+    |
+  Service	接口/实现类
+    |
+  Dao		接口/实现类
+
+  耦合 -- 解耦 （分层->解耦）
+
+二、所用技术
+  Struts + Hibernate + Spring + JBPM + Junit + jQuery + ...
+
+三、开发环境
+  Windows + Tomcat + MyEclipse + mySQL + IE
+
+四、代码规范
+  代码格式：Ctrl+Shift+F
+  命名规范：驼峰命名法
+  注释
+
+五、一些约定
+  编码：utf-8
+  id：Long
+
+六、项目计划
+  共12天
+  -----------------------------------
+  搭建环境		0.5天
+  基本功能		0.5天
+  系统管理		2天
+  权限			2天
+  论坛   		3天
+  工作流 + 审批流转	2天 + 2天
+
+搭建环境=======================================================
+
+一、数据库
+  create database hsxoa default character set utf8;
+
+  show create database hsxoa;
+
+二、MyEclipse工程
+  1、新建Web工程，并把编码设置为utf-8
+
+  2、添加框架环境
+    Junit
+    Struts2
+    Hibernate
+    Spring
+
+  3、整合SSH
+    Struts2与Spring整合
+    Hibernate与Spring整合
+
+  4、资源分类
+
+  5、配置日志
+
+Struts2
+  jar包
+  struts.xml  
+  web.xml --> 配置Struts2的核心过滤器
+
+Hibernate
+  jar包:核心包，必须包，jpa，c3p0，jdbc
+  hibernate.cfg.xml
+  *.hbm.xml
+  log4j.properties
+
+Spring
+  jar包:核心包，aspectj/*.jar，cglib/*.jar，jakarta-commons/*.jar
+  applicationContext.xml/beans.xml
+
+声明一个bean
+	@Component
+	@Controller
+	@Service
+	@Repository
+
+配置bean的scope的生命周期
+	@Scope("prototype")
+
+注入bean
+	@Resource
+
+注：注入(@Resource)要求其已经放到容器(@Repository/@Service...)中了
+
+Struts2与Spring整合 （让Struts2中的对象管理更加强大）
+  1、在web.xml中配置Spring的监听器
+  2、加一个整合的jar包  --> struts2-spring-plugin-2.1.8.1.jar
+
+Hibernate与Spring整合 （1、管理SessionFactory实例，只需要一个就可以；2、声明事物管理）
+
+Spring
+	IOC 管理对象
+	AOP 事物管理
+
+slf4j
+	JDK logging --> logging.properties
+	log4j	    --> log4j.properties
+  jar包：slf4j-log4j12-1.6.1.jar,log4j-1.2.15.jar
+
+	debug 	调试信息
+	info	一般信息
+	warn	警告
+	error	错误
+	fatal	严重错误
+
+基本功能=======================================================
+
+User, UserDao
+	save(User user), update(), delete(), find(), ...
+Role, RoleDao
+	save(Role role), update(), delete(), find(), ...
+
+BaseDao<T>
+	save(T t), update(), delete(), find(), ...
+UserDao extends BaseDao {...}
+RoleDao extends BaseDao {...}
+
+==============================================================
+
+1、设计实体/表
+  设计实体 --> JavaBean --> *.hbm.xml --> hibernate.cfg.xml(mapping) --> 建表
+2、分析有几个功能，对应几个请求
+3、实现功能
+	1、写Action类，写Action中的方法，确定Service中的方法
+	2、写Servicel方法，确定Dao中的方法
+	3、写Dao方法
+	4、写jsp页面 
+
+--------------------------------------------
+	请求数量	地址栏
+转发	   1		 不变
+重定向 	   2		 变化  
+   注：功能之间用重定向，功能内部篡改用转发  
+
+--------------------------------------------------------
+增删改查共4个功能，需要6个请求，查1、增2、改2、删1
+所以需要相应的6个Action方法，每个Action方法处理一种请求
+
+作用		方法名		返回值		对应的页面
+--------------------------------------------------------------------------------
+列表		list()		list		list.jsp		
+删除		delete()	toList		
+添加页面	addUI()		addUI		addUI.jsp
+添加		add()		toList
+修改页面	editUI() 	editUI		editUI.jsp
+修改		edit()		toList
+
+
+如果添加使用转发，那么地址栏不变，当刷新页面时，又重新添加了一次。
+
+action
+  role_* 
+	role_list
+	role_addUI
+	role_editUI
+
+--------------------------------------------------------------------
+OGNL表达式
+  格式：
+	在struts.xml中，OGNL的格式为：${ognl}
+	在JSP页面中,OGNL的格式为%{ognl}-值栈
+		只能写Struts2的自定义标签的属性中，%{}可以省略
+  语法：
+	user	   = findValue("user")
+	#user	   = map.get("user")
+	#user.name = map.get("user").getName()
+
+El表示式
+	格式：${}
+
+Struts2中El表达式中访问顺序：
+    page,request,valueStack.findValue(),session,application
+	所以在Struts2中的JSP页面中可以用EL表达式从对象栈中获取值
+	
+-----------------------------------------------------------------------
+Hibernate映射
+格式：
+  <!-- parent属性，本类与上级Department类多对一 -->	
+  <!-- users属性，本类与User类一对多 -->
+  <!-- roles属性，本类与Role类多对多 -->
+  ？属性，本类与？类的？关系
+	?1: 某属性名 name
+	?2: 关联的类型 class
+	?3: 关联关系 
+
+  多对一:
+	<many-to-one name="" class="" column=""></many-to-one>
+
+  一对多：
+	<set name="">
+		<key column=""></key>
+		<one-to-many class=""/>
+	</set>
+  多对多：
+	<set name="" table=""> <!-- name填写属性 table表示填写中间表的表名 -->
+        	<key column=""></key> <!-- 外键的名称，当前对象+Id -->
+        	<many-to-many class="" column=""></many-to-many> <!-- class填写关联的类 column主键的名称，class+Id -->
+        </set>
+
+===============================================================================
+注：改变class的结构才需要发布，其他任何情况下都不需要发布，
+    当修改页面时，不需要重启服务器。
+
+
+部门管理
+
+  1、基本的增删改查
+  2、处理增删改查中对于“上级部门”的处理
+  3、处理部门的树状结构显示
+
+===============================================================================
+
+实现一组功能的步骤：
+
+一、做Action相关的准备
+  1、创建MyAction extends BaseAction。
+  2、定义出MyAction中的方法，要写出方法名、作用、返回值。
+  3、创建出所用到的JSP页面(目前还没有具体内容)
+  4、配置Action：
+ 	1.在MyAction上写注解@Controller与@Scope("prototype")
+	2.在struts.xml中配置这个MyAction与所用到的result
+
+二、做Service相关的准备
+  1、创建接口MyService extends BaseDao
+  2、创建实现类MyServiceImpl extends BaseDaoImpl implements Myservice
+  3、配置：在MyServiceImpl上写注解@Service与@Transactional
+  4、声明：在BaseAction中声明：
+   	@Resource
+	protected MyService myService;
+
+三、填空
+  1、Action方法
+  2、新增的Service方法
+  3、JSP页面：
+	1.<%@ include file="/WEB-INF/jsp/public/commons.jspf" >
+	2.${pageContext.request.contextPath}
+
+NB快捷键：Alt + Shift + A
+
+@Transactional
+  可以写在方法上:
+	对本方法有效
+  可以写在类上：
+	对本类中所有的public方法有效
+    	对子类的中的方法有效
+ 	对父类声明的方法无效
+     ==> @Transactional可以被继承
+
+==================================================================
+
+	MD5
+文本  ------> 摘要
+1.jar包：
+	commons-codec.jar
+2.code:
+	String md5Digest = DigestUtils.md5Hex("1234");
+	user.setPassword(md5Digest);
+
+===============================================================================
+
+权限：
+	控制功能能的使用
+
+web应用中的权限：
+	每个功能多有相应的URL地址
+	对功能的控制就是对URL地址的访问控制
+
+权限方案：
+	用户 *----* 角色 *----* 权限
+
+要点说明：
+  1、权限就是控制功能的使用(功能对应着URL)
+  2、对功能的控制就是对URL的访问控制
+  3、在我们的程序中，一个功能对应一个或者两个URL
+      	(1)、例如列表或者删除功能，只对应一个URL
+	(2)、例如添加或者修改功能，对应两个URL：..add，..addUI
+
+与权限相关的功能具体有哪些：
+    初始化数据(安装):
+	权限数据
+	超级管理员
+    分配权限：
+	给角色分配权限
+	用户的权限就是用户所有角色的权限
+    使用权限：
+	1.登陆、注销、主页面
+	2.左侧的菜单是根据权限显示的
+ 	3.右边页面中的连接是根据权限显示的
+	4.拦截每一个action请求，验证用户是否有权限访问
+
+================================================================================
+
+在Struts2中怎么添加错误的提示消息
+1、在Action中
+	addFieldError("name", "有错了");
+
+2、在JSP中：
+	<s:fielderror fieldName="name"/>
+	<s:fielderror/>  --> 显示全部错误消息
+
+
+
+==================================================================================
+
+映射时注意
+1、content为text类型
+2、有一对一的关联关系
+3、单向关联（可以把双边都写出来，有一边用不到）
+4、继承关系
+
+一对一：
+	基于主键的约束：[不考虑]
+	基于外键的约束：
+		<many-to-one name="" class="" column="" unique="true"></many-to-one>
+
+
+
+=================================================================================
+
+分析功能
+	？个功能
+	？个请求
+
+实现功能
+	Action
+	Service
+	Dao
+	Jsp
+
+-----
+浏览
+	版块列表	1个	
+	显示单个版块（主题列表）	1个
+	显示单个主题（主帖+回帖列表）	1个
+参与
+	发新帖（发主题）	2个
+	回帖（回复）	2个
+管理文章
+	主题
+		设置类型[置顶、精华]	1个
+		移动到其他版块 - 类似修改	2个
+		删除
+		修改
+	回复
+		删除
+		修改
+版块管理
+	增删改查
+	上下移动
+
+================================================================================
+
+
+//TODO   - 要去做的
+//FIXME  - 紧急要去做的
+
+  ------> 在Tasks中找
+
+
+==============================================================================
+
+论坛中特殊属性的处理
+
+一、特殊属性的作用
+Forum
+	topicCount	主题数量
+	artricleCount	文章数量[主题数+回复数]
+	lastTopic	最后发表的主题
+Topic
+	replyCount	回复数量
+	lastReply	最后发表的回复
+	lastUpdateTime 	最后更新的时间[主推的发表时间或最后回复的时间]
+
+二、特殊属性的维护
+			发表新主题		发表新回复		
+Forum
+	topicCount	+1
+	artricleCount	+1			+1
+	lastTopic	更新为当前的新主题
+Topic
+	replyCount	0，默认值		+1
+	lastReply	null，默认值		更新为当前的新回复
+	lastUpdateTime 	主题的发表时间		更新为当前的新回复的时间
+
+
+==============================================================================
+
+select id, name, (case gender when 1 then '男' when 2 then '女' else '保密' end) from user;
+
+
+
+=========================================================================================
+
+分页： Page对象
+
+	JSP		<-		Action		   <-		Service
+  recordList：本页的数据列表
+  currentPage：当前页
+  pageCount：总页数
+  pageSize：每页显示多少条
+  recordCount：总记录数
+  beginPageIndex：页码列表的开始索引
+  endPageIndex：页码列表的结束索引
+
+
+	// 指定的或是参数
+	private int currentPage; // 当前页
+	private int pageSize; // 每页显示多少条
+
+	// 查询数据库
+	private int recordCount; // 总记录数
+	private List recordList; // 本页的数据列表
+
+	// 计算
+	private int pageCount; // 总页数
+	private int beginPageIndex; // 页码列表的开始索引
+	private int endPageIndex; // 页码列表的结束索引
+
+	/**
+	 * 只需要前4个必要的属性，会自动的计算出其他3个属性的值
+	 * @param currentPage
+	 * @param pageSize
+	 * @param recordCount
+	 * @param recordList
+	 */
+	public PageBean(int currentPage, int pageSize, int recordCount, List recordList) {
+		this.currentPage = currentPage;
+		this.pageSize = pageSize;
+		this.recordCount = recordCount;
+		this.recordList = recordList;
+		// 计算总页数
+		pageCount = (recordCount + pageSize - 1) / pageSize;
+		// 计算beginPageIndex和endPageIndex
+		// 1、总页数不多于10页
+		if (pageCount <= 10) {
+			beginPageIndex = 1;
+			endPageIndex = pageCount;
+		}
+		// 2、总页数多于10页，显示当前页附件的10个页码（前4个+本身+后5个）
+		else {
+			// 2.1、当本身显示的页码是最前的5页，则显示前10页
+			if (currentPage <= 5) {
+				beginPageIndex = 1;
+				endPageIndex = 10;
+			}
+			// 2.2、当本身显示的页码是最后的6页，则显示后10页
+			else if (pageCount - currentPage <= 5 ) {
+				beginPageIndex = pageCount - pageSize + 1;
+				endPageIndex = pageCount;
+			}
+			// 2.3、其他情况
+			else {
+				beginPageIndex = currentPage - 4;
+				endPageIndex = currentPage + 5;
+			}
+			
+			/*beginPageIndex = currentPage - 4;
+			endPageIndex = currentPage + 5;
+			// 当前的页面不足4时，则显示前面的10个页码
+			if (beginPageIndex < 1) {
+				beginPageIndex = 1;
+				endPageIndex = 10;
+			}
+			// 当后面的页码不足5个时，则显示后面的10个页码
+			if (endPageIndex > pageCount) {
+				beginPageIndex = pageCount - pageSize + 1;
+				endPageIndex = pageCount;
+			}*/
+		}
+	}
+
+
+============================================================================================
+
+from 		必须
+    实体名
+where		可选
+    条件1 and 条件2 and ... 条件n
+order by	可选
+    属性1,属性2，...属性n
+
+QueryHelper(class)
+	--- 用于辅助拼接HQL语句
+
+
+
+
+

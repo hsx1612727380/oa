@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="com.hsx.oa.domain">
+
+	<!-- 映射Forum持久化类 -->
+	<class name="Forum" table="oa_forum">
+		
+		<id name="id" column="id">
+			<!-- 定义主键生成器策略 -->
+			<generator class="native"/>
+		</id>
+		<!-- 用于映射普通属性 -->
+		<property name="name" column="name"/>
+		<property name="description" column="description"/>
+		<property name="position" column="position"/>
+		<property name="topicCount" column="topicCount"/>
+		<property name="artricleCount" column="artricleCount"/>
+		<!-- 关联关系 -->
+		<!-- topics属性，本类与Topic类的一对多的关系 -->
+		<set name="topics">
+			<key column="forumId"></key>
+			<one-to-many class="Topic"/>
+		</set>
+		<!-- lastTopic属性，本类与Topic类的一对一的关系 -->
+		<many-to-one name="lastTopic" class="Topic" column="lastTopicId" unique="true"></many-to-one>
+	
+	</class>
+</hibernate-mapping>

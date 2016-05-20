@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="com.hsx.oa.domain">
+
+	<!-- 映射Role持久化类 -->
+	<class name="Role" table="oa_role">
+		
+		<id name="id" column="id">
+			<!-- 定义主键生成器策略 -->
+			<generator class="native"/>
+		</id>
+		<!-- 用于映射普通属性 -->
+		<property name="name" column="name"/>
+		<property name="description" column="description"/>
+		
+		<!-- 关联关系 -->
+		<!-- users属性，本类与User类多对多关系 -->
+		<set name="users" table="oa_user_role">
+			<key column="roleId"></key>
+			<many-to-many class="User" column="userId"/>
+		</set>
+		<!-- privileges属性，本类与Privilege类多对多关系 -->
+		<set name="privileges" table="oa_role_privilege" lazy="false">
+			<key column="roleId"></key>
+			<many-to-many class="Privilege" column="privilegeId"></many-to-many>
+		</set>		
+		
+	</class>
+</hibernate-mapping>
